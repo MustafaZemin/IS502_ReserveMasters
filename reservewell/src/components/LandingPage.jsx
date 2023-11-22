@@ -279,7 +279,7 @@ const restaurants = [
   },
 ];
 
-const Restaurants = () => {
+const HomePage = () => {
   const [filteredRestaurants, setFilteredRestaurants] = useState([]);
   const [searchKeyWord, setSearchKeyword] = useState("");
   const [cuisines, setCuisines] = useState([]);
@@ -361,7 +361,8 @@ const Restaurants = () => {
           </div>
         </div>
         <DoubleArrowDown
-          className="bg-rwScarlet rounded-full text-amber-200 h-24 w-24 cursor-pointer"
+          className="bg-rwScarlet rounded-full text-amber-200 cursor-pointer"
+          sx={{ height: "72px", width: "72px" }}
           onClick={() =>
             window.scrollTo({
               top: window.innerHeight, // Scroll down by half of the viewport height + 96 pixels
@@ -459,4 +460,4 @@ const Restaurants = () => {
   );
 };
 
-export default Restaurants;
+export default HomePage;
