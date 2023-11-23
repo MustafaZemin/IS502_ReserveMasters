@@ -7,15 +7,15 @@ import {
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 
-import Searchbar from "../components/custom-components/Searchbar/Searchbar";
+import Searchbar from "./custom-components/Searchbar/Searchbar";
 import PageNumbers from "./PageNumbers";
-import RestaurantItem from "../components/Restaurant/RestaurantItem";
+import RestaurantItem from "./Restaurant/RestaurantItem";
 import DoubleArrowDown from "@mui/icons-material/KeyboardDoubleArrowDown";
 
 const restaurants = [
   {
     name: "Tasty Burger Joint",
-    review: 8,
+    id: "1",
     cuisine: "Fast Food",
     slug: "tasty-burger-joint",
     rating: 7.5,
@@ -25,7 +25,7 @@ const restaurants = [
   },
   {
     name: "Sushi Delight",
-    review: 9,
+    id: "2",
     cuisine: "Far East",
     slug: "sushi-delight",
     rating: 9.2,
@@ -35,7 +35,7 @@ const restaurants = [
   },
   {
     name: "Le Petit Bistro",
-    review: 7,
+    id: "3",
     cuisine: "French",
     slug: "le-petit-bistro",
     rating: 8.0,
@@ -45,7 +45,7 @@ const restaurants = [
   },
   {
     name: "Spice Kingdom",
-    review: 7,
+    id: "4",
     cuisine: "Far East",
     slug: "spice-kingdom",
     rating: 7.9,
@@ -55,7 +55,7 @@ const restaurants = [
   },
   {
     name: "Rustic BBQ Haven",
-    review: 8,
+    id: "5",
     cuisine: "Steakhouse",
     slug: "rustic-bbq-haven",
     rating: 8.5,
@@ -65,7 +65,7 @@ const restaurants = [
   },
   {
     name: "Café Bella Italia",
-    review: 9,
+    id: "6",
     cuisine: "Italian",
     slug: "cafe-bella-italia",
     rating: 9.0,
@@ -75,7 +75,7 @@ const restaurants = [
   },
   {
     name: "The Veggie Patch",
-    review: 8,
+    id: "7",
     cuisine: "Vegetarian",
     slug: "the-veggie-patch",
     rating: 8.3,
@@ -85,7 +85,7 @@ const restaurants = [
   },
   {
     name: "Fusion Frenzy",
-    review: 7,
+    id: "8",
     cuisine: "Fusion",
     slug: "fusion-frenzy",
     rating: 7.7,
@@ -96,7 +96,7 @@ const restaurants = [
   // Italian Restaurants
   {
     name: "Pasta Paradiso",
-    review: 8,
+    id: "9",
     cuisine: "Italian",
     slug: "pasta-paradiso",
     rating: 8.7,
@@ -106,7 +106,7 @@ const restaurants = [
   },
   {
     name: "Ristorante Rustico",
-    review: 9,
+    id: "10",
     cuisine: "Italian",
     slug: "ristorante-rustico",
     rating: 9.5,
@@ -116,7 +116,7 @@ const restaurants = [
   },
   {
     name: "Trattoria Bella",
-    review: 8,
+    id: "11",
     cuisine: "Italian",
     slug: "trattoria-bella",
     rating: 8.4,
@@ -125,10 +125,9 @@ const restaurants = [
     img: "https://picsum.photos/200/300",
   },
 
-  // French Restaurants
   {
     name: "La Maison du Fromage",
-    review: 8,
+    id: "12",
     cuisine: "French",
     slug: "la-maison-du-fromage",
     rating: 8.3,
@@ -138,7 +137,7 @@ const restaurants = [
   },
   {
     name: "Boulangerie Belle Vie",
-    review: 7,
+    id: "13",
     cuisine: "French",
     slug: "boulangerie-belle-vie",
     rating: 7.9,
@@ -149,7 +148,7 @@ const restaurants = [
 
   {
     name: "Prime Cuts Grill",
-    review: 8,
+    id: "14",
     cuisine: "Steakhouse",
     slug: "prime-cuts-grill",
     rating: 8.6,
@@ -159,7 +158,7 @@ const restaurants = [
   },
   {
     name: "Green Eats",
-    review: 9,
+    id: "15",
     cuisine: "Vegan",
     slug: "green-eats",
     rating: 9.3,
@@ -169,7 +168,7 @@ const restaurants = [
   },
   {
     name: "Crispy Crunch",
-    review: 7,
+    id: "16",
     cuisine: "Fast Food",
     slug: "crispy-crunch",
     rating: 7.8,
@@ -179,7 +178,7 @@ const restaurants = [
   },
   {
     name: "Mega Burger Co.",
-    review: 8,
+    id: "17",
     cuisine: "Fast Food",
     slug: "mega-burger-co",
     rating: 8.2,
@@ -189,7 +188,7 @@ const restaurants = [
   },
   {
     name: "Taco Haven",
-    review: 7,
+    id: "18",
     cuisine: "Fast Food",
     slug: "taco-haven",
     rating: 7.5,
@@ -199,7 +198,7 @@ const restaurants = [
   },
   {
     name: "Wings & Things",
-    review: 9,
+    id: "19",
     cuisine: "Fast Food",
     slug: "wings-and-things",
     rating: 8.9,
@@ -209,7 +208,7 @@ const restaurants = [
   },
   {
     name: "Noodle World",
-    review: 8,
+    id: "20",
     cuisine: "Far East",
     slug: "noodle-world",
     rating: 8.1,
@@ -219,7 +218,7 @@ const restaurants = [
   },
   {
     name: "La Belle Epoque",
-    review: 9,
+    id: "21",
     cuisine: "French",
     slug: "la-belle-epoque",
     rating: 9.1,
@@ -229,7 +228,7 @@ const restaurants = [
   },
   {
     name: "Sizzle & Grill",
-    review: 8,
+    id: "22",
     cuisine: "Steak",
     slug: "sizzle-and-grill",
     rating: 8.7,
@@ -239,7 +238,7 @@ const restaurants = [
   },
   {
     name: "Garden Greens",
-    review: 8,
+    id: "23",
     cuisine: "Vegetarian",
     slug: "garden-greens",
     rating: 8.4,
@@ -249,7 +248,7 @@ const restaurants = [
   },
   {
     name: "Herb Haven",
-    review: 9,
+    id: "24",
     cuisine: "Vegetarian",
     slug: "herb-haven",
     rating: 9.2,
@@ -259,7 +258,7 @@ const restaurants = [
   },
   {
     name: "Global Fusion Grill",
-    review: 8,
+    id: "25",
     cuisine: "Fusion",
     slug: "global-fusion-grill",
     rating: 8.6,
@@ -269,7 +268,7 @@ const restaurants = [
   },
   {
     name: "Eclectic Eats",
-    review: 7,
+    id: "26",
     cuisine: "Fusion",
     slug: "eclectic-eats",
     rating: 7.8,
