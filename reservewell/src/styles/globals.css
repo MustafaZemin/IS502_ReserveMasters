@@ -25,3 +25,12 @@ body {
     )
     rgb(var(--background-start-rgb));
 } */
+
+.react-datepicker-wrapper {
+  width: 100%;
+}
+.react-datepicker__close-icon::after {
+  background-color: transparent !important;
+  color: gray !important;
+  font-size: x-large !important;
+}
