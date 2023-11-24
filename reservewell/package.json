@@ -14,6 +14,7 @@
     "@hookform/resolvers": "^3.3.2",
     "@mui/icons-material": "^5.14.18",
     "@mui/material": "^5.14.18",
+    "firebase": "^10.6.0",
     "next": "14.0.3",
     "react": "^18",
     "react-datepicker": "^4.23.0",
