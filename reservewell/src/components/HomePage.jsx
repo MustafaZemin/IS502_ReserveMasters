@@ -297,8 +297,8 @@ const HomePage = () => {
     const querySnapshot = await getDocs(collection(db, "restaurants"));
     let tempRestaurants = [];
     querySnapshot.forEach((doc) => {
-      const restaurant = doc.data();
-      tempRestaurants.push(restaurant);
+      const restaurantData = doc.data();
+      tempRestaurants.push({ id: doc.id, ...restaurantData });
       // doc.data() is never undefined for query doc snapshots
       // console.log(doc.id, " => ", doc.data());
     });
@@ -446,10 +446,13 @@ const HomePage = () => {
             </h5>
             {currentRestaurants.length > 0 ? (
               currentRestaurants.map(
-                ({ name, rating, cuisine, img, slug, description }, index) => (
+                (
+                  { name, rating, cuisine, img, slug, description, id },
+                  index
+                ) => (
                   <RestaurantItem
                     key={index}
-                    slug={slug || name}
+                    slug={slug || id}
                     name={name}
                     rating={rating}
                     imageUrl={img || "https://picsum.photos/200/300"}
