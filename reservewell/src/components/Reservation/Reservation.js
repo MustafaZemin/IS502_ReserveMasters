@@ -18,7 +18,8 @@ const Reservation = (props) => {
     const [currentReservationStep, setCurrentReservationStep] = useState(0);
     const [isSuccessSnackbarOpen, setIsSuccessSnackbarOpen] = useState(false);
     const [isErrorSnackbarOpen, setIsErrorSnackbarOpen] = useState(false);
-    const [submitButtonText, setSubmitButtonText] = useState("Make Reservation");
+    const [submitButtonText, setSubmitButtonText] = useState("Confirm & Reserve");
+    const [formValues, setFormValues] = useState({});
     const router = useRouter();
 
     const reservationsCollectionRef = collection(db, 'reservations');
@@ -68,6 +69,13 @@ const Reservation = (props) => {
     };
 
     const onSubmit = async (data) => {
+
+        if (currentReservationStep === 1) {
+            setFormValues({ ...data })
+            setCurrentReservationStep(2);
+            return;
+        }
+
         setSubmitButtonText(
             <CircularProgress
                 size={18}
@@ -89,16 +97,20 @@ const Reservation = (props) => {
                 restaurant_id: props?.restaurantId,
                 status: ["created"],
                 user_id: "",
+                name: data.name,
+                surname: data.surname,
+                phone_number: data.phoneNumber,
+                email: data.email
 
             }
             await setDoc(reservationsRef, reqBody);
-            setSubmitButtonText("Make Reservation");
+            setSubmitButtonText("Confirm & Reserve");
             setIsSuccessSnackbarOpen(true);
             setTimeout(() => router.push("/"), 2500)
         }
         catch (error) {
             setIsErrorSnackbarOpen(true);
-            setSubmitButtonText("Make Reservation");
+            setSubmitButtonText("Confirm & Reserve");
         }
     };
 
@@ -106,7 +118,7 @@ const Reservation = (props) => {
         <div>
             <Snackbar
                 open={isSuccessSnackbarOpen}
-                autoHideDuration={3000}
+                autoHideDuration={2500}
                 onClose={handleClose}
                 anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
             >
@@ -119,7 +131,7 @@ const Reservation = (props) => {
             </Snackbar>
             <Snackbar
                 open={isErrorSnackbarOpen}
-                autoHideDuration={3000}
+                autoHideDuration={2500}
                 onClose={handleClose}
                 anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
             >
@@ -131,9 +143,7 @@ const Reservation = (props) => {
                 </Alert>
             </Snackbar>
             <form onSubmit={methods.handleSubmit(onSubmit)} className='grid place-content-center '>
-                {currentReservationStep === 0 && <div className='w-[600px] h-[600px] flex flex-col justify-between gap-y-4 rounded-lg bg-white mt-12 p-8' style={{
-
-                }}>
+                {currentReservationStep === 0 && <div className='w-[600px] h-[600px] flex flex-col justify-between gap-y-4 rounded-lg bg-white mt-12 p-8' >
                     <div className='flex flex-col gap-y-4'>
                         <h2 className='font-semibold text-2xl'>Reservation Information</h2>
                         <Autocomplete name="personCount" options={["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"]}
@@ -162,17 +172,27 @@ const Reservation = (props) => {
                             />
                         </div>
                     </div>
-                    <button className='p-4 rounded-lg disabled:text-slate-600 disabled:bg-slate-300 disabled:hover:brightness-100 bg-rwSalmon hover:brightness-110 transition-all font-semibold text-lg bottom-0'
-                        onClick={() => setCurrentReservationStep(1)}
-                        disabled={!selectedDate || !selectedPersonCount || !selectedTimeSlot}
-                    >
-                        Next
-                    </button>
+
+
+                    <div className='flex items-center space-x-8 justify-between'>
+                        <button className='p-4 w-full rounded-lg  bg-rwCadetGray hover:brightness-110 transition-all font-semibold text-lg bottom-0'
+                            onClick={() => router.push("/")}
+                        >
+                            Cancel
+                        </button>
+                        <button className='p-4 w-full rounded-lg disabled:text-slate-600 disabled:bg-slate-300 disabled:hover:brightness-100 bg-rwSalmon hover:brightness-110 transition-all font-semibold text-lg bottom-0'
+                            onClick={() => setCurrentReservationStep(1)}
+                            disabled={!selectedDate || !selectedPersonCount || !selectedTimeSlot}
+                        >
+                            Next
+                        </button>
+                    </div>
+
+
+
                 </div>}
                 {
-                    currentReservationStep === 1 && <div className='w-[600px] h-[600px] flex flex-col justify-between gap-y-4 rounded-lg bg-white mt-12 p-8' style={{
-
-                    }}>
+                    currentReservationStep === 1 && <div className='w-[600px] min-h-[600px] flex flex-col justify-between gap-y-4 rounded-lg bg-white mt-12 p-8' >
                         <div className='flex flex-col gap-y-4'>
                             <h2 className='font-semibold text-2xl'>Contact Information</h2>
                             <div className='flex space-x-6'>
@@ -188,7 +208,9 @@ const Reservation = (props) => {
                                     {...methods.register('name')}
                                     error={methods.formState.errors.name}
                                     helperText={methods.formState.errors?.name?.message}
-
+                                    inputProps={{
+                                        maxLength: 30
+                                    }}
                                 />
                                 <TextField label="Surname"
                                     name='surname'
@@ -197,7 +219,9 @@ const Reservation = (props) => {
                                     {...methods.register('surname')}
                                     error={methods.formState.errors.surname}
                                     helperText={methods.formState.errors?.surname?.message}
-
+                                    inputProps={{
+                                        maxLength: 30
+                                    }}
                                 />
                             </div>
                             <TextField label="e-mail"
@@ -215,7 +239,9 @@ const Reservation = (props) => {
                                 error={methods.formState.errors.phoneNumber}
                                 helperText={methods.formState.errors?.phoneNumber?.message}
                                 {...methods.register('phoneNumber')}
-
+                                inputProps={{
+                                    maxLength: 30
+                                }}
                             />
                             <TextField label="Message (optional)"
                                 name='message'
@@ -223,14 +249,106 @@ const Reservation = (props) => {
                                 multiline
                                 className='w-full'
                                 {...methods.register('message')}
+                                inputProps={{
+                                    maxLength: 1000
+                                }}
+                            />
 
+                        </div>
+                        <div className='flex items-center space-x-8 justify-between'>
+                            <button className='p-4 w-full rounded-lg  bg-rwCadetGray hover:brightness-110 transition-all font-semibold text-lg bottom-0'
+                                onClick={() => setCurrentReservationStep(0)}
+                            >
+                                Back
+                            </button>
+                            <button className='p-4 w-full text-white rounded-lg disabled:text-slate-600 disabled:bg-slate-300 disabled:hover:brightness-100 bg-rwScarlet font-semibold text-lg bottom-0'
+                                type='submit'
+                            >
+                                Make Reservation
+                            </button>
+                        </div>
+                    </div>
+                }
+                {
+                    currentReservationStep === 2 &&
+                    <div className='w-[600px] min-h-[600px] flex flex-col justify-between gap-y-4 rounded-lg bg-white mt-12 p-8'
+                        style={{
+                            "& .Mui-disabled": {
+                                color: "black",
+                                WebkitTextFillColor: "black"
+                            }
+                        }}
+                    >
+                        <div className='flex flex-col gap-y-4'>
+                            <h2 className='font-semibold text-2xl'>Confirm Reservation</h2>
+                            <div className='flex space-x-4'>
+                                <TextField label="Date"
+                                    name='dateConfirm'
+                                    type='text'
+                                    className='w-full'
+                                    value={selectedDate}
+                                    disabled
+
+                                />
+                                <TextField label="Time Slot"
+                                    name='timeSlotConfirm'
+                                    type='text'
+                                    className='w-full'
+                                    value={selectedTimeSlot}
+                                    disabled
+                                />
+                            </div>
+                            <TextField label="Person Count"
+                                name='personCountConfirm'
+                                className='w-full'
+                                value={selectedPersonCount}
+                                disabled
+                            />
+                            <div className='flex space-x-4'>
+                                <TextField label="Name"
+                                    name='nameConfirm'
+                                    type='text'
+                                    className='w-full'
+                                    value={formValues.name}
+                                    disabled
+
+                                />
+                                <TextField label="Surname"
+                                    name='surnameConfirm'
+                                    type='text'
+                                    className='w-full'
+                                    value={formValues.surname}
+                                    disabled
+
+                                />
+                            </div>
+                            <TextField label="e-mail"
+                                name='emailConfirm'
+                                className='w-full'
+                                value={formValues.email}
+                                disabled
+                            />
+                            <TextField label="Phone Number"
+                                name='phoneNumberConfirm'
+                                className='w-full'
+                                value={formValues.phoneNumber}
+                                disabled
+
+                            />
+                            <TextField label="Message (optional)"
+                                name='message'
+                                type='text'
+                                multiline
+                                className='w-full'
+                                value={formValues.message || " "}
+                                disabled
                             />
 
                             {/* <div><Checkbox className=''/></div> */}
                         </div>
                         <div className='flex items-center space-x-8 justify-between'>
                             <button className='p-4 w-full rounded-lg  bg-rwCadetGray hover:brightness-110 transition-all font-semibold text-lg bottom-0'
-                                onClick={() => setCurrentReservationStep(0)}
+                                onClick={() => setCurrentReservationStep(1)}
                             >
                                 Back
                             </button>
@@ -244,8 +362,8 @@ const Reservation = (props) => {
                     </div>
                 }
 
-            </form>
-        </div>
+            </form >
+        </div >
     )
 }
 
