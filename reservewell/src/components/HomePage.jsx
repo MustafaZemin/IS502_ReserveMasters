@@ -302,6 +302,7 @@ const HomePage = () => {
       // doc.data() is never undefined for query doc snapshots
       // console.log(doc.id, " => ", doc.data());
     });
+    setRestaurants([...tempRestaurants]);
     setFilteredRestaurants([...tempRestaurants]);
   };
   useEffect(() => {
@@ -335,7 +336,7 @@ const HomePage = () => {
           restaurant.name.toLowerCase().includes(searchKeyWord.toLowerCase())
         )
       );
-    }
+    } else setFilteredRestaurants(restaurants);
   }, [searchKeyWord]);
 
   const handleCuisineChange = (event) => {
@@ -462,7 +463,7 @@ const HomePage = () => {
                 No Restaurants Found!
               </p>
             )}
-            {restaurants.length > 0 && (
+            {currentRestaurants.length > 0 && (
               <div className="col-span-3 flex justify-end">
                 <PageNumbers
                   paginate={paginate}
