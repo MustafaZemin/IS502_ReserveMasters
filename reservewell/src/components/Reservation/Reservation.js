@@ -97,7 +97,8 @@ const Reservation = (props) => {
             setTimeout(() => router.push("/"), 2500)
         }
         catch (error) {
-            setIsErrorSnackbarOpen(true)
+            setIsErrorSnackbarOpen(true);
+            setSubmitButtonText("Make Reservation");
         }
     };
 
