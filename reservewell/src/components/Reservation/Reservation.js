@@ -5,7 +5,7 @@ import * as yup from "yup";
 import { useForm } from 'react-hook-form';
 import { yupResolver } from "@hookform/resolvers/yup";
 import db from "../../firebase/config";
-import { collection, doc, setDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc} from 'firebase/firestore';
 import { useRouter } from 'next/router';
 
 
@@ -104,6 +104,15 @@ const Reservation = (props) => {
 
             }
             await setDoc(reservationsRef, reqBody);
+
+            const rstrntID = reqBody.restaurant_id;
+            const restaurantCollectionRef = collection(db, 'restaurants', rstrntID);
+            const restaurantRef = doc(restaurantCollectionRef);
+
+            await updateDoc(restaurantRef, {
+                capacity: capacity - selectedPersonCount
+            });
+            
             setSubmitButtonText("Confirm & Reserve");
             setIsSuccessSnackbarOpen(true);
             setTimeout(() => router.push("/"), 2500)
