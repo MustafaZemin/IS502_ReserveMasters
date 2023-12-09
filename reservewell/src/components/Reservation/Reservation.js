@@ -105,9 +105,9 @@ const Reservation = (props) => {
             }
             await setDoc(reservationsRef, reqBody);
 
-            const rstrntID = reqBody.restaurant_id;
+            //const rstrntID = reqBody.restaurant_id;
             const restaurantCollectionRef = collection(db, 'restaurants');
-            const restaurantRef = doc(restaurantCollectionRef, rstrntID);
+            const restaurantRef = doc(restaurantCollectionRef, props?.restaurantId);
 
             await updateDoc(restaurantRef, {
                 capacity: capacity - selectedPersonCount
