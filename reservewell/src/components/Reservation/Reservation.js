@@ -107,11 +107,11 @@ const Reservation = (props) => {
 
             const rstrntID = reqBody.restaurant_id;
             const restaurantCollectionRef = collection(db, 'restaurants', rstrntID);
-            const restaurantRef = doc(restaurantCollectionRef);
+            /*const restaurantRef = doc(restaurantCollectionRef);
 
             await updateDoc(restaurantRef, {
                 capacity: capacity - selectedPersonCount
-            });
+            });*/
             
             setSubmitButtonText("Confirm & Reserve");
             setIsSuccessSnackbarOpen(true);
