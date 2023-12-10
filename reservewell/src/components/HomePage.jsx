@@ -484,3 +484,18 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
+// workingHours = [
+//   {
+//     timeSlot: "10-12",
+//     capacity: 40,
+//   },
+//   {
+//     timeSlot: "12-14",
+//     capacity: 30,
+//   },
+//   {
+//     timeSlot: "14-16",
+//     capacity: 25,
+//   },
+// ];
