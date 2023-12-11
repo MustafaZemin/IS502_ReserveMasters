@@ -3,7 +3,7 @@ import React from "react";
 
 const RestaurantItem = (props) => {
   return (
-    <Link href={`/${props.slug}`}>
+    <Link href={`/reservation/${props.slug}`}>
       <div className="grid h-[400px] w-full rounded-lg bg-white p-2 text-center text-black drop-shadow-lg">
         <div className="grid h-[200px] w-full ">
           <img

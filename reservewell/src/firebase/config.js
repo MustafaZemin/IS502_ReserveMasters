@@ -1,7 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, getFirestore, setDoc } from 'firebase/firestore';
+import { getAuth, createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, signOut } from "firebase/auth";
 
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -22,12 +22,65 @@ const firebaseConfig = {
 const firebaseApp = initializeApp(firebaseConfig);
 
 const auth = getAuth();
+const db = getFirestore(firebaseApp);
 
-export const signup = async (email, password) => {
-    const { user } = await createUserWithEmailAndPassword(auth, email, password)
-    // console.log(user)
-    return user;
+
+
+export const signin = async (email, password, setError) => {
+    try {
+        const { user } = await signInWithEmailAndPassword(auth, email, password);
+        localStorage.setItem("user", JSON.stringify(user));
+        setError(null)
+        return user;
+    }
+    catch (error) {
+        setError(error.message || error);
+    }
 }
 
-const db = getFirestore(firebaseApp);
+export const updateUser = async (updatedUserData) => {
+    await updateProfile(auth.currentUser, updatedUserData)
+}
+
+
+
+export const signup = async (email, password, username, setError) => {
+    try {
+        const { user } = await createUserWithEmailAndPassword(auth, email, password);
+        if (user) {
+            // const usersRef = doc(usersCollectionRef);
+
+            const reqBody = {
+                id: user.uid,
+                email: user.email,
+                username: username || "user",
+                reservationCounter: 0,
+                createdAt: user.metadata.creationTime || "",
+            };
+            // await setDoc(usersRef, reqBody);
+
+            try {
+                await setDoc(doc(db, "users", user.uid), reqBody);
+                const updatedUser = await updateUser({ displayName: username });
+                console.log(updatedUser)
+            }
+            catch (error) {
+                setError(error.message || error)
+            }
+
+            //   router.push("/login");
+        }
+        return user;
+    }
+    catch (error) {
+        setError(error.message);
+        return error;
+    }
+}
+
+export const signout = async () => {
+    await signOut(auth);
+    localStorage.removeItem("user");
+}
+
 export default db;

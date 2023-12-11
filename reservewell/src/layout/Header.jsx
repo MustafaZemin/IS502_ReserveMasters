@@ -1,3 +1,4 @@
+"use client";
 import CloseIcon from "@mui/icons-material/Close";
 import MenuIcon from "@mui/icons-material/Menu";
 import { Box, Drawer, List, ListItem, useMediaQuery } from "@mui/material";
@@ -6,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
 import rwLogo from "../../public/reserveWellLogo.png";
+import { signout } from "@/firebase/config";
 
 const navLinkClasses = "font-semibold transition-all text-xs xl:text-sm";
 
@@ -18,14 +20,7 @@ const navbarItems = [
     name: "Restaurants",
     href: "/restaurants",
   },
-  // {
-  //   name: 'Kaynaklar',
-  //   href: '/catalog',
-  // },
-  //   {
-  //     name: "Fiyatlandırma",
-  //     href: "/catalog",
-  //   },
+
   {
     name: "About us",
     href: "/catalog",
@@ -52,7 +47,14 @@ const Header = () => {
   // const isLoggedIn = useSelector(
   //   (state: RootState) => state.auth.userLoginStatus
   // );
-  const isLoggedIn = false;
+  let isLoggedIn = false;
+  let user = {};
+  if (typeof window !== "undefined") {
+    user = JSON.parse(localStorage.getItem("user"));
+    isLoggedIn = Boolean(user);
+  }
+
+  // const isLoggedIn = localStorage.getItem("user");
 
   const toggleDrawer = (open) => () => {
     setIsDrawerOpen(open);
@@ -83,8 +85,8 @@ const Header = () => {
             {navbarItems.map((item, index) => (
               <ListItem key={index}>
                 <Link
-                  // href={item.href}
-                  href={"/"}
+                  href={item.href}
+                  // href={"/"}
                   className="mb-6 text-xl"
                 >
                   {item.name}
@@ -96,11 +98,7 @@ const Header = () => {
           <List className="mt-6">
             {navbarAuthItems.map((item, index) => (
               <ListItem key={index}>
-                <Link
-                  // href={item.href}
-                  href="/"
-                  className="mb-6 text-xl font-semibold"
-                >
+                <Link href={item.href} className="mb-6 text-xl font-semibold">
                   {item.name}
                 </Link>
               </ListItem>
@@ -129,8 +127,8 @@ const Header = () => {
         {navbarItems.map((item, index) => (
           <Link
             key={index}
-            //  href={item.href}
-            href={"/"}
+            href={item.href}
+            // href={"/"}
             className={navLinkClasses}
           >
             {item.name}
@@ -141,8 +139,8 @@ const Header = () => {
       <nav className="mx-8 hidden items-center space-x-16 lg:flex ">
         {!isLoggedIn && (
           <Link
-            href="/"
-            // href="/login"
+            // href="/"
+            href="/login"
             className={navLinkClasses}
           >
             Log in
@@ -150,12 +148,24 @@ const Header = () => {
         )}
         {!isLoggedIn && path !== "/register" && (
           <Link
-            href="/"
-            // href="/register"
+            // href="/"
+            href="/register"
             className={`${navLinkClasses} rounded-full bg-rwScarlet px-8 py-4  hover:brightness-110`}
           >
             Register
           </Link>
+        )}
+        {isLoggedIn && <p>Welcome {user?.displayName}!</p>}
+        {isLoggedIn && (
+          <button
+            className={navLinkClasses}
+            onClick={async () => {
+              await signout();
+              router.push("/login");
+            }}
+          >
+            Log out
+          </button>
         )}
       </nav>
     </div>
