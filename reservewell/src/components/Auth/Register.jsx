@@ -12,6 +12,7 @@ const Register = () => {
   const [username, setUsername] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState(null);
+  const [selectedUserType, setSelectedUserType] = useState("diner");
   const router = useRouter();
 
   const usersCollectionRef = collection(db, "users");
@@ -50,64 +51,90 @@ const Register = () => {
       </Snackbar>
       <div className="w-[600px] min-h-[600px] flex flex-col justify-between gap-y-4 rounded-lg bg-white mt-12 p-8">
         <div className="flex flex-col gap-y-8">
-          <h3 className="font-semibold text-2xl mb-4">Register</h3>
-          <TextField
-            label="e-mail"
-            name="email"
-            className="w-full"
-            type="email"
-            onChange={(e) => setEmail(e.target.value)}
-            // error={methods.formState.errors.email}
-            // helperText={methods.formState.errors?.email?.message}
-            // {...methods.register("email")}
-          />
-          <TextField
-            label="Username"
-            name="username"
-            className="w-full"
-            type="text"
-            onChange={(e) => setUsername(e.target.value)}
+          <h3 className="font-semibold text-2xl ">Register</h3>
 
-            // error={methods.formState.errors.email}
-            // helperText={methods.formState.errors?.email?.message}
-            // {...methods.register("email")}
-          />
-          <TextField
-            label="Phone Number (Optional)"
-            name="phoneNumber"
-            className="w-full"
-            type="text"
-            // error={methods.formState.errors.email}
-            // helperText={methods.formState.errors?.email?.message}
-            // {...methods.register("email")}
-          />
-          <TextField
-            label="Password"
-            name="password"
-            className="w-full"
-            type="password"
-            onChange={(e) => {
-              setPassword(e.target.value);
-            }}
+          <div className="w-full flex items-center justify-around">
+            <button
+              type="button"
+              className={`text-center text-lg font-semibold px-8 py-2 rounded-full transition-all ${
+                selectedUserType === "diner" && "bg-rwBlack text-white"
+              }`}
+              onClick={() => setSelectedUserType("diner")}
+            >
+              As a diner
+            </button>
+            <button
+              type="button"
+              className={`text-center text-lg font-semibold px-4 py-2 rounded-full transition-all ${
+                selectedUserType === "restaurant" && "bg-rwBlack text-white"
+              }`}
+              onClick={() => setSelectedUserType("restaurant")}
+            >
+              As a restaurant
+            </button>
+          </div>
+          {selectedUserType === "diner" && (
+            <div className="flex flex-col gap-y-8">
+              <TextField
+                label="e-mail"
+                name="email"
+                className="w-full"
+                type="email"
+                onChange={(e) => setEmail(e.target.value)}
+                // error={methods.formState.errors.email}
+                // helperText={methods.formState.errors?.email?.message}
+                // {...methods.register("email")}
+              />
+              <TextField
+                label="Username"
+                name="username"
+                className="w-full"
+                type="text"
+                onChange={(e) => setUsername(e.target.value)}
 
-            // error={methods.formState.errors.email}
-            // helperText={methods.formState.errors?.email?.message}
-            // {...methods.register("email")}
-          />
-          <TextField
-            label="Confirm Password"
-            name="password"
-            className="w-full"
-            type="password"
-            onChange={(e) => setConfirmPassword(e.target.value)}
+                // error={methods.formState.errors.email}
+                // helperText={methods.formState.errors?.email?.message}
+                // {...methods.register("email")}
+              />
+              <TextField
+                label="Phone Number (Optional)"
+                name="phoneNumber"
+                className="w-full"
+                type="text"
+                // error={methods.formState.errors.email}
+                // helperText={methods.formState.errors?.email?.message}
+                // {...methods.register("email")}
+              />
+              <TextField
+                label="Password"
+                name="password"
+                className="w-full"
+                type="password"
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                }}
 
-            // error={methods.formState.errors.email}
-            // helperText={methods.formState.errors?.email?.message}
-            // {...methods.register("email")}
-          />
+                // error={methods.formState.errors.email}
+                // helperText={methods.formState.errors?.email?.message}
+                // {...methods.register("email")}
+              />
+              <TextField
+                label="Confirm Password"
+                name="password"
+                className="w-full"
+                type="password"
+                onChange={(e) => setConfirmPassword(e.target.value)}
+
+                // error={methods.formState.errors.email}
+                // helperText={methods.formState.errors?.email?.message}
+                // {...methods.register("email")}
+              />
+            </div>
+          )}
         </div>
         <div className="flex items-center space-x-8 justify-between">
           <button
+            type="button"
             onClick={() => router.push("/")}
             className="p-4 w-full rounded-lg  bg-rwCadetGray hover:brightness-110 transition-all font-semibold text-lg bottom-0"
             // onClick={() => router.push("/")}
