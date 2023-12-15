@@ -44,19 +44,31 @@ export const updateUser = async (updatedUserData) => {
 
 
 
-export const signup = async (email, password, username, setError) => {
+export const signup = async (email, password, username, userType, setError, restaurantData) => {
     try {
         const { user } = await createUserWithEmailAndPassword(auth, email, password);
         if (user) {
             // const usersRef = doc(usersCollectionRef);
-
-            const reqBody = {
-                id: user.uid,
-                email: user.email,
-                username: username || "user",
-                reservationCounter: 0,
-                createdAt: user.metadata.creationTime || "",
-            };
+            let reqBody = {};
+            if (userType === "0") {
+                reqBody = {
+                    id: user.uid,
+                    email: user.email,
+                    username: username || "user",
+                    reservationCounter: 0,
+                    createdAt: user.metadata.creationTime || "",
+                };
+            }
+            else if (userType === "1") {
+                reqBody = {
+                    id: user.uid,
+                    email: user.email,
+                    username: username || "user",
+                    createdAt: user.metadata.creationTime || "",
+                    restaurantData: { ...restaurantData },
+                    restaurantId: user.uid,
+                };
+            }
             // await setDoc(usersRef, reqBody);
 
             try {
