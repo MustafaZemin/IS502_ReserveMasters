@@ -34,7 +34,7 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 One of the most convenient way to deploy a Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-The project is deployed with Vercel, and the url of it is [https://is-502-reserve-well-ew8k.vercel.app/](https://is-502-reserve-well-ew8k.vercel.app/)
+The project is deployed with Vercel, and the url of it is [https://is502-reservewell.vercel.app/](https://is502-reservewell.vercel.app/)
 
 You can check out the [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
 
