@@ -86,14 +86,11 @@ const Reservation = (props) => {
 
         if (restaurantSnapshot.exists()) {
             const restaurantData = restaurantSnapshot.data();
-            // setSelectedRestaurantData(restaurantData);
 
             if (restaurantData && restaurantData.capacityInfo && restaurantData.capacityInfo[dateToUpdate]) {
                 const currentCapacity = restaurantData.capacityInfo[dateToUpdate][timeSlotToUpdate]
-                // Update the capacity for the specified time slot on the given date
                 restaurantData.capacityInfo[dateToUpdate][timeSlotToUpdate] = currentCapacity - personCount;
 
-                // Update the entire capacityInfo object in Firestore
                 await updateDoc(restaurantRef, {
                     capacityInfo: restaurantData.capacityInfo
                 });

@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from 'firebase/app';
-import { doc, getFirestore, setDoc } from 'firebase/firestore';
+import { collection, doc, getDocs, getFirestore, query, setDoc, where } from 'firebase/firestore';
 import { getAuth, createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, signOut } from "firebase/auth";
 
 // TODO: Add SDKs for Firebase products that you want to use
@@ -29,7 +29,20 @@ const db = getFirestore(firebaseApp);
 export const signin = async (email, password, setError) => {
     try {
         const { user } = await signInWithEmailAndPassword(auth, email, password);
-        localStorage.setItem("user", JSON.stringify(user));
+        const q = query(collection(db, "users"), where("email", "==", email));
+        const querySnapshot = await getDocs(q);
+        let loggedInUser;
+        let storedUser
+        if (querySnapshot) {
+            loggedInUser = querySnapshot.docs[0].data();
+            storedUser = { ...user };
+            storedUser.type = loggedInUser.type;
+            localStorage.setItem("user", JSON.stringify(storedUser));
+        }
+        else localStorage.setItem("user", JSON.stringify(user));
+
+        // user.type = loggedInUser.type;
+        // console.log(user)
         setError(null)
         return user;
     }
@@ -39,10 +52,8 @@ export const signin = async (email, password, setError) => {
 }
 
 export const updateUser = async (updatedUserData) => {
-    await updateProfile(auth.currentUser, updatedUserData)
+    const user = await updateProfile(auth.currentUser, updatedUserData);
 }
-
-
 
 export const signup = async (email, password, username, userType, setError, restaurantData) => {
     try {
@@ -75,7 +86,7 @@ export const signup = async (email, password, username, userType, setError, rest
 
             try {
                 await setDoc(doc(db, "users", user.uid), { ...reqBody });
-                const updatedUser = await updateUser({ displayName: username });
+                await updateUser({ displayName: username });
                 const day = new Date(); // today
                 day.setDate(day.getDate() + 1); // tomorrow
                 const futureDate = new Date();
