@@ -455,7 +455,7 @@ const HomePage = () => {
                     slug={slug || id}
                     name={name}
                     rating={rating}
-                    imageUrl={img || "https://picsum.photos/200/300"}
+                    imageUrl={img}
                     cuisine={cuisine}
                     shortDescription={description}
                   />

@@ -1,11 +1,11 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Alert, Autocomplete, CircularProgress, Snackbar, TextField } from '@mui/material'
 import DatePicker from "react-datepicker";
 import * as yup from "yup";
 import { useForm } from 'react-hook-form';
 import { yupResolver } from "@hookform/resolvers/yup";
 import db from "../../firebase/config";
-import { collection, doc, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, doc, setDoc, updateDoc, getDoc } from 'firebase/firestore';
 import { useRouter } from 'next/router';
 
 
@@ -20,7 +20,92 @@ const Reservation = (props) => {
     const [isErrorSnackbarOpen, setIsErrorSnackbarOpen] = useState(false);
     const [submitButtonText, setSubmitButtonText] = useState("Confirm & Reserve");
     const [formValues, setFormValues] = useState({});
+    const [selectedRestaurantData, setSelectedRestaurantData] = useState(null);
     const router = useRouter();
+
+    function convertDate(dateString) {
+        const parts = dateString.split('.');
+        if (parts.length === 3) {
+            const [day, month, year] = parts;
+            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+        }
+        return null; // Invalid date format
+    }
+
+    function convertTime(timeRange) {
+        // Split the time range into start and end times
+        const [startTime, endTime] = timeRange.split('-');
+
+        // Extract hours from start and end times
+        const startHours = parseInt(startTime.split(':')[0], 10);
+        let endHours = parseInt(endTime.split(':')[0], 10);
+
+        // Adjust endHours for the case "00:00"
+
+        // Format the hours to remove leading zeros
+        const formattedStartHours = startHours;
+        const formattedEndHours = endHours;
+
+        // Construct the new time range format
+        const newTimeRange = `${formattedStartHours}-${formattedEndHours}`;
+
+        return newTimeRange;
+    }
+
+    const restaurantId = router.query.restaurantId;
+
+    const getRestaurantData = async (id) => {
+        const restaurantRef = doc(db, "restaurants", id);
+
+        const restaurantSnapshot = await getDoc(restaurantRef);
+
+        if (restaurantSnapshot.exists()) {
+            const restaurantData = restaurantSnapshot.data();
+            setSelectedRestaurantData(restaurantData);
+        }
+    }
+    useEffect(() => {
+        if (restaurantId) {
+            getRestaurantData(restaurantId)
+        }
+    }, [restaurantId])
+
+    const decreaseTimeSlotCapacity = async (personCount, date, timeSlot) => {
+
+
+
+        // const dateToUpdate = '2023-12-17';
+        // const timeSlotToUpdate = '10-12';
+        // const restaurantRef = doc(db, "restaurants", restaurantId);
+
+        const dateToUpdate = convertDate(date);
+        const timeSlotToUpdate = convertTime(timeSlot);
+        const restaurantRef = doc(db, "restaurants", restaurantId);
+
+        const restaurantSnapshot = await getDoc(restaurantRef);
+
+        if (restaurantSnapshot.exists()) {
+            const restaurantData = restaurantSnapshot.data();
+            // setSelectedRestaurantData(restaurantData);
+
+            if (restaurantData && restaurantData.capacityInfo && restaurantData.capacityInfo[dateToUpdate]) {
+                const currentCapacity = restaurantData.capacityInfo[dateToUpdate][timeSlotToUpdate]
+                // Update the capacity for the specified time slot on the given date
+                restaurantData.capacityInfo[dateToUpdate][timeSlotToUpdate] = currentCapacity - personCount;
+
+                // Update the entire capacityInfo object in Firestore
+                await updateDoc(restaurantRef, {
+                    capacityInfo: restaurantData.capacityInfo
+                });
+
+            } else {
+                console.error('Date or time slot does not exist.');
+            }
+        } else {
+            console.error('Restaurant document does not exist.');
+        }
+
+    }
 
     const reservationsCollectionRef = collection(db, 'reservations');
 
@@ -34,6 +119,7 @@ const Reservation = (props) => {
         resolver: yupResolver(schema)
     });
     const today = new Date();
+    const tomorrow = today.setDate(today.getDate() + 1)
     const maxDate = new Date();
     maxDate.setDate(today.getDate() + 30);
 
@@ -89,21 +175,24 @@ const Reservation = (props) => {
         try {
             const reservationsRef = doc(reservationsCollectionRef);
             const reqBody = {
-                created_at: new Date(),
-                group_size: selectedPersonCount,
-                time_slot: selectedTimeSlot,
+                createdAt: new Date(),
+                groupSize: selectedPersonCount,
+                timeSlot: selectedTimeSlot,
                 date: selectedDate,
                 notes: data.message || "",
                 restaurant_id: props?.restaurantId,
-                status: ["created"],
-                user_id: "",
+                status: "created",
+                userId: "",
                 name: data.name,
                 surname: data.surname,
-                phone_number: data.phoneNumber,
+                phoneNumber: data.phoneNumber,
                 email: data.email
 
             }
             await setDoc(reservationsRef, reqBody);
+            decreaseTimeSlotCapacity(selectedPersonCount, selectedDate, selectedTimeSlot);
+
+            // decreaseTimeSlotCapacity(selectedPersonCount, selectedDate, selectedTimeSlot)
 
             /*const rstrntID = reqBody.restaurant_id;
             const restaurantCollectionRef = collection(db, 'restaurants');
@@ -167,7 +256,7 @@ const Reservation = (props) => {
                                     selected={selectedDateOption}
                                     name='date'
                                     onChange={handleChange}
-                                    minDate={today}
+                                    minDate={tomorrow}
                                     maxDate={maxDate}
                                     placeholderText="Select the Date"
                                     className='border-[1px] p-2 rounded-md w-full h-14 border-slate-400 hover:border-black'
@@ -175,7 +264,18 @@ const Reservation = (props) => {
                                     // isClearable
                                     value={selectedDate ? selectedDateOption : null}
                                 />
-                                <Autocomplete name="timeSlot" value={selectedTimeSlot || ""} options={timeSlots} className='w-full'
+                                <Autocomplete
+                                    name="timeSlot"
+                                    value={selectedTimeSlot || ""}
+                                    options={timeSlots}
+                                    getOptionDisabled={(option) => {
+                                        const convertedTime = convertTime(option);
+                                        const convertedDate = convertDate(selectedDate);
+                                        const existingCapacity = selectedRestaurantData.capacityInfo[convertedDate][convertedTime]
+                                        return selectedPersonCount > existingCapacity
+                                    }}
+                                    disabled={!selectedDate || !selectedPersonCount}
+                                    className='w-full'
                                     onChange={(_, selectedValue) => setSelectedTimeSlot(selectedValue)}
 
                                     renderInput={(params) => <TextField {...params} label="Time Slots" />}
