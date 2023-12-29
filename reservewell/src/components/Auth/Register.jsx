@@ -49,7 +49,8 @@ const Register = () => {
 
     setError(null);
     const user = await signup(email, password, username, "0", setError);
-    console.log(user);
+    if (!user) return;
+    router.push("/login");
   };
   const submitRegisterRestaurant = async (event, data) => {
     event.preventDefault();
@@ -75,9 +76,8 @@ const Register = () => {
       setError,
       restaurantData
     );
-    // console.log(user);
-
-    // console.log(email, password, confirmPassword);
+    if (!user) return;
+    router.push("/login");
   };
 
   return (
@@ -192,7 +192,6 @@ const Register = () => {
                 <button
                   type="submit"
                   className="p-4 w-full rounded-lg disabled:text-slate-600 disabled:bg-slate-300 disabled:hover:brightness-100 bg-rwSalmon hover:brightness-110 transition-all font-semibold text-lg bottom-0"
-                  // onClick={() => setCurrentReservationStep(1)}
                   // disabled={!selectedDate || !selectedPersonCount || !selectedTimeSlot}
                 >
                   Register
@@ -336,7 +335,6 @@ const Register = () => {
                 <button
                   type="submit"
                   className="p-4 w-full rounded-lg disabled:text-slate-600 disabled:bg-slate-300 disabled:hover:brightness-100 bg-rwSalmon hover:brightness-110 transition-all font-semibold text-lg bottom-0"
-                  onClick={() => router.push("/login")}
                   // disabled={!selectedDate || !selectedPersonCount || !selectedTimeSlot}
                 >
                   Register & Create Restaurant

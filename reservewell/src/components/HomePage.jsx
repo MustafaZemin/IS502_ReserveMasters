@@ -302,30 +302,35 @@ const HomePage = () => {
           <div>
             <div className="text-left">
               <h4 className="text-2xl font-semibold mb-4">Reservations:</h4>
-              <div className="">
-                {reservations.map((res) => (
-                  <ul className="grid grid-cols-3 gap-6 p-4 rounded-lg border-2 bg-rwSalmon">
-                    <li>
-                      <p className="font-semibold">Date:</p> {res.date}
-                    </li>
-                    <li>
-                      <p className="font-semibold">Time Slot:</p> {res.timeSlot}
-                    </li>
-                    <li>
-                      <p className="font-semibold">Group Size:</p>{" "}
-                      {res.groupSize}
-                    </li>
-                    <li>
-                      <p className="font-semibold">Phone Number:</p>{" "}
-                      {res.phoneNumber}
-                    </li>
-                    <li>
-                      <p className="font-semibold">Special Notes:</p>{" "}
-                      {res.notes}
-                    </li>
-                  </ul>
-                ))}
-              </div>
+              {reservations.length > 0 ? (
+                <div className="">
+                  {reservations.map((res) => (
+                    <ul className="grid grid-cols-3 gap-6 p-4 rounded-lg border-2 bg-rwSalmon">
+                      <li>
+                        <p className="font-semibold">Date:</p> {res.date}
+                      </li>
+                      <li>
+                        <p className="font-semibold">Time Slot:</p>{" "}
+                        {res.timeSlot}
+                      </li>
+                      <li>
+                        <p className="font-semibold">Group Size:</p>{" "}
+                        {res.groupSize}
+                      </li>
+                      <li>
+                        <p className="font-semibold">Phone Number:</p>{" "}
+                        {res.phoneNumber}
+                      </li>
+                      <li>
+                        <p className="font-semibold">Special Notes:</p>{" "}
+                        {res.notes}
+                      </li>
+                    </ul>
+                  ))}
+                </div>
+              ) : (
+                <p className="font-semibold text-lg">No Reservations Found!</p>
+              )}
             </div>
           </div>
           <div className="text-left">
