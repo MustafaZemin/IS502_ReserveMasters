@@ -68,15 +68,12 @@ const Login = () => {
           <button
             onClick={() => router.push("/")}
             className="p-4 w-full rounded-lg  bg-rwCadetGray hover:brightness-110 transition-all font-semibold text-lg bottom-0"
-            // onClick={() => router.push("/")}
           >
             Cancel
           </button>
           <button
             type="submit"
             className="p-4 w-full rounded-lg disabled:text-slate-600 disabled:bg-slate-300 disabled:hover:brightness-100 bg-rwSalmon hover:brightness-110 transition-all font-semibold text-lg bottom-0"
-            // onClick={() => setCurrentReservationStep(1)}
-            // disabled={!selectedDate || !selectedPersonCount || !selectedTimeSlot}
           >
             Login
           </button>

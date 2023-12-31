@@ -10,6 +10,71 @@ import { useRouter } from 'next/router';
 
 
 import "react-datepicker/dist/react-datepicker.css";
+
+function convertDate(dateString) {
+    const parts = dateString.split('.');
+    if (parts.length === 3) {
+        const [day, month, year] = parts;
+        return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+    }
+    return null; // Invalid date format
+}
+
+function convertTime(timeRange) {
+    // Split the time range into start and end times
+    const [startTime, endTime] = timeRange.split('-');
+
+    // Extract hours from start and end times
+    const startHours = parseInt(startTime.split(':')[0], 10);
+    let endHours = parseInt(endTime.split(':')[0], 10);
+
+    // Adjust endHours for the case "00:00"
+
+    // Format the hours to remove leading zeros
+    const formattedStartHours = startHours;
+    const formattedEndHours = endHours;
+
+    // Construct the new time range format
+    const newTimeRange = `${formattedStartHours}-${formattedEndHours}`;
+
+    return newTimeRange;
+}
+
+export const decreaseTimeSlotCapacity = async (personCount, date, timeSlot, restaurantId) => {
+
+
+    // const dateToUpdate = '2023-12-17';
+    // const timeSlotToUpdate = '10-12';
+    // const restaurantRef = doc(db, "restaurants", restaurantId);
+
+    const dateToUpdate = convertDate(date);
+    const timeSlotToUpdate = convertTime(timeSlot);
+
+    const restaurantRef = doc(db, "restaurants", restaurantId);
+
+
+    const restaurantSnapshot = await getDoc(restaurantRef);
+
+    if (restaurantSnapshot.exists()) {
+        const restaurantData = restaurantSnapshot.data();
+
+        if (restaurantData && restaurantData.capacityInfo && restaurantData.capacityInfo[dateToUpdate]) {
+            const currentCapacity = restaurantData.capacityInfo[dateToUpdate][timeSlotToUpdate]
+            restaurantData.capacityInfo[dateToUpdate][timeSlotToUpdate] = currentCapacity - personCount;
+
+            await updateDoc(restaurantRef, {
+                capacityInfo: restaurantData.capacityInfo
+            });
+
+        } else {
+            console.error('Date or time slot does not exist.');
+        }
+    } else {
+        console.error('Restaurant document does not exist.');
+    }
+
+}
+
 const Reservation = (props) => {
     const [selectedDateOption, setSelectedDateOption] = useState(null);
     const [selectedDate, setSelectedDate] = useState(null);
@@ -21,39 +86,10 @@ const Reservation = (props) => {
     const [submitButtonText, setSubmitButtonText] = useState("Confirm & Reserve");
     const [formValues, setFormValues] = useState({});
     const [selectedRestaurantData, setSelectedRestaurantData] = useState(null);
+    const [user, setUser] = useState(null);
     const router = useRouter();
 
-    function convertDate(dateString) {
-        const parts = dateString.split('.');
-        if (parts.length === 3) {
-            const [day, month, year] = parts;
-            return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
-        }
-        return null; // Invalid date format
-    }
-
-    function convertTime(timeRange) {
-        // Split the time range into start and end times
-        const [startTime, endTime] = timeRange.split('-');
-
-        // Extract hours from start and end times
-        const startHours = parseInt(startTime.split(':')[0], 10);
-        let endHours = parseInt(endTime.split(':')[0], 10);
-
-        // Adjust endHours for the case "00:00"
-
-        // Format the hours to remove leading zeros
-        const formattedStartHours = startHours;
-        const formattedEndHours = endHours;
-
-        // Construct the new time range format
-        const newTimeRange = `${formattedStartHours}-${formattedEndHours}`;
-
-        return newTimeRange;
-    }
-
     const restaurantId = router.query.restaurantId;
-
     const getRestaurantData = async (id) => {
         const restaurantRef = doc(db, "restaurants", id);
 
@@ -68,41 +104,16 @@ const Reservation = (props) => {
         if (restaurantId) {
             getRestaurantData(restaurantId)
         }
-    }, [restaurantId])
+    }, [restaurantId]);
 
-    const decreaseTimeSlotCapacity = async (personCount, date, timeSlot) => {
+    useEffect(() => {
+        const loggedUser = localStorage.getItem("user");
+        if (loggedUser) setUser(JSON.parse(loggedUser));
+
+    }, [])
 
 
 
-        // const dateToUpdate = '2023-12-17';
-        // const timeSlotToUpdate = '10-12';
-        // const restaurantRef = doc(db, "restaurants", restaurantId);
-
-        const dateToUpdate = convertDate(date);
-        const timeSlotToUpdate = convertTime(timeSlot);
-        const restaurantRef = doc(db, "restaurants", restaurantId);
-
-        const restaurantSnapshot = await getDoc(restaurantRef);
-
-        if (restaurantSnapshot.exists()) {
-            const restaurantData = restaurantSnapshot.data();
-
-            if (restaurantData && restaurantData.capacityInfo && restaurantData.capacityInfo[dateToUpdate]) {
-                const currentCapacity = restaurantData.capacityInfo[dateToUpdate][timeSlotToUpdate]
-                restaurantData.capacityInfo[dateToUpdate][timeSlotToUpdate] = currentCapacity - personCount;
-
-                await updateDoc(restaurantRef, {
-                    capacityInfo: restaurantData.capacityInfo
-                });
-
-            } else {
-                console.error('Date or time slot does not exist.');
-            }
-        } else {
-            console.error('Restaurant document does not exist.');
-        }
-
-    }
 
     const reservationsCollectionRef = collection(db, 'reservations');
 
@@ -119,7 +130,6 @@ const Reservation = (props) => {
     const tomorrow = today.setDate(today.getDate() + 1)
     const maxDate = new Date();
     maxDate.setDate(today.getDate() + 30);
-
     const handleChange = (date) => {
         setSelectedDateOption(date);
         const dateToBeFormatted = new Date(date);
@@ -171,23 +181,26 @@ const Reservation = (props) => {
         );
         try {
             const reservationsRef = doc(reservationsCollectionRef);
+            const reservationId = String(Math.random());
             const reqBody = {
                 createdAt: new Date(),
                 groupSize: selectedPersonCount,
                 timeSlot: selectedTimeSlot,
                 date: selectedDate,
                 notes: data.message || "",
-                restaurant_id: props?.restaurantId,
+                restaurantId: props?.restaurantId,
                 status: "created",
-                userId: "",
+                userId: user?.uid || "",
+                restaurantName: selectedRestaurantData.name,
                 name: data.name,
                 surname: data.surname,
                 phoneNumber: data.phoneNumber,
-                email: data.email
+                email: data.email,
+                reservationId: reservationId
 
             }
-            await setDoc(reservationsRef, reqBody);
-            decreaseTimeSlotCapacity(selectedPersonCount, selectedDate, selectedTimeSlot);
+            await setDoc(doc(db, "reservations", reservationId), { ...reqBody });
+            decreaseTimeSlotCapacity(selectedPersonCount, selectedDate, selectedTimeSlot, restaurantId);
 
             // decreaseTimeSlotCapacity(selectedPersonCount, selectedDate, selectedTimeSlot)
 
@@ -241,6 +254,7 @@ const Reservation = (props) => {
                 {currentReservationStep === 0 &&
                     <div className='w-[600px] h-[600px] flex flex-col justify-between gap-y-4 rounded-lg bg-white mt-12 p-8' >
                         <div className='flex flex-col gap-y-4'>
+                            {selectedRestaurantData && <h1 className='font-semibold text-3xl'>Reservation for {selectedRestaurantData.name}</h1>}
                             <h2 className='font-semibold text-2xl'>Reservation Information</h2>
                             <Autocomplete name="personCount" options={["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"]}
                                 onChange={(_, selectedValue) => setSelectedPersonCount(selectedValue)}
@@ -254,7 +268,7 @@ const Reservation = (props) => {
                                     name='date'
                                     onChange={handleChange}
                                     minDate={tomorrow}
-                                    maxDate={maxDate}
+                                    // maxDate={maxDate}
                                     placeholderText="Select the Date"
                                     className='border-[1px] p-2 rounded-md w-full h-14 border-slate-400 hover:border-black'
                                     dateFormat={"dd/MM/yyyy"}
@@ -301,6 +315,8 @@ const Reservation = (props) => {
                 {
                     currentReservationStep === 1 && <div className='w-[600px] min-h-[600px] flex flex-col justify-between gap-y-4 rounded-lg bg-white mt-12 p-8' >
                         <div className='flex flex-col gap-y-4'>
+                            <h1 className='font-semibold text-3xl'>Reservation for {selectedRestaurantData.name}</h1>
+
                             <h2 className='font-semibold text-2xl'>Contact Information</h2>
                             <div className='flex space-x-6'>
                                 <div className='flex space-x-1'><b>Date:</b> <p>{selectedDate}</p></div>
@@ -336,6 +352,7 @@ const Reservation = (props) => {
                                 className='w-full'
                                 error={methods.formState.errors.email}
                                 helperText={methods.formState.errors?.email?.message}
+                                defaultValue={user?.email}
                                 {...methods.register('email')}
 
                             />
@@ -387,6 +404,8 @@ const Reservation = (props) => {
                         }}
                     >
                         <div className='flex flex-col gap-y-4'>
+                            <h1 className='font-semibold text-3xl'>Reservation for {selectedRestaurantData.name}</h1>
+
                             <h2 className='font-semibold text-2xl'>Confirm Reservation</h2>
                             <div className='flex space-x-4'>
                                 <TextField label="Date"

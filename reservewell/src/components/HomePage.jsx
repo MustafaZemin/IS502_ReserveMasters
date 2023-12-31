@@ -13,6 +13,7 @@ import RestaurantItem from "./Restaurant/RestaurantItem";
 import DoubleArrowDown from "@mui/icons-material/KeyboardDoubleArrowDown";
 import {
   collection,
+  deleteDoc,
   doc,
   getDoc,
   getDocs,
@@ -21,6 +22,7 @@ import {
   where,
 } from "firebase/firestore";
 import db from "@/firebase/config";
+import { decreaseTimeSlotCapacity } from "./Reservation/Reservation";
 
 const HomePage = () => {
   const [filteredRestaurants, setFilteredRestaurants] = useState([]);
@@ -31,6 +33,7 @@ const HomePage = () => {
   const [restaurants, setRestaurants] = useState([]);
   const [restaurantData, setRestaurantData] = useState(null);
   const [reservations, setReservations] = useState([]);
+  const [reservationsDiner, setReservationsDiner] = useState([]);
   const [updatedCapacity, setUpdatedCapacity] = useState();
 
   let user;
@@ -47,7 +50,7 @@ const HomePage = () => {
 
     const q = query(
       collection(db, "reservations"),
-      where("restaurant_id", "==", id)
+      where("restaurantId", "==", id)
     );
     const querySnapshot = await getDocs(q);
     let tempReservations = [];
@@ -62,9 +65,19 @@ const HomePage = () => {
     }
   };
 
+  const getReservationsDiner = async (id) => {
+    const q = query(collection(db, "reservations"), where("userId", "==", id));
+    const querySnapshot = await getDocs(q);
+    let tempReservations = [];
+    if (querySnapshot) {
+      querySnapshot.forEach((doc) => tempReservations.push(doc.data()));
+      setReservationsDiner(tempReservations);
+    }
+  };
+
   useEffect(() => {
     if (userId) getRestaurantData(userId);
-  }, [userId]);
+  }, [userId, reservations]);
 
   if (userType === "1") {
   }
@@ -89,6 +102,7 @@ const HomePage = () => {
 
   useEffect(() => {
     getRestaurantsFromDb();
+    if (user && userType === "0") getReservationsDiner(userId);
   }, []);
 
   useEffect(() => {
@@ -157,16 +171,103 @@ const HomePage = () => {
     }
   };
 
+  const cancelReservationDiner = async (
+    id,
+    personCount,
+    date,
+    timeSlot,
+    restaurantId
+  ) => {
+    await deleteDoc(doc(db, "reservations", id));
+    decreaseTimeSlotCapacity(-personCount, date, timeSlot, restaurantId);
+    getReservationsDiner(userId);
+  };
+
+  const cancelReservationRestaurant = async (
+    id,
+    personCount,
+    date,
+    timeSlot,
+    restaurantId
+  ) => {
+    await deleteDoc(doc(db, "reservations", id));
+    decreaseTimeSlotCapacity(-personCount, date, timeSlot, restaurantId);
+    getRestaurantData(userId);
+  };
+
   const paginate = (pageNumber) => setCurrentPageNumber(pageNumber);
   const currentRestaurants = filteredRestaurants.slice(
     indexOfFirstItem,
     indexOfLastItem
   );
-  console.log(restaurantData);
   return (
     <div>
       {userType === "0" && (
         <div className="">
+          {user && reservationsDiner.length > 0 ? (
+            <div className="p-12 gap-4 grid ">
+              <h3 className="font-semibold text-xl">My Reservations</h3>
+              <div className="grid grid-cols-2 gap-12 ">
+                {/* <h3 className="font-semibold text-lg">My Reservations:</h3> */}
+                {reservationsDiner.map(
+                  ({
+                    reservationId,
+                    groupSize,
+                    date,
+                    timeSlot,
+                    restaurantId,
+                    phoneNumber,
+                    notes,
+                  }) => (
+                    <div className="rounded-lg border-2 bg-rwSalmon">
+                      <div className=" flex items-center justify-end ">
+                        <button
+                          className="w-fit p-2 rounded-lg font-semibold text-sm bg-rwKhaki"
+                          onClick={() =>
+                            cancelReservationDiner(
+                              reservationId,
+                              groupSize,
+                              date,
+                              timeSlot,
+                              restaurantId
+                            )
+                          }
+                        >
+                          Cancel Reservation
+                        </button>
+                      </div>
+                      <ul className="grid grid-cols-3 gap-6 p-4 ">
+                        <li>
+                          <p className="font-semibold">Date:</p> {date}
+                        </li>
+                        <li>
+                          <p className="font-semibold">Time Slot:</p> {timeSlot}
+                        </li>
+                        <li>
+                          <p className="font-semibold">Group Size:</p>{" "}
+                          {groupSize}
+                        </li>
+                        <li>
+                          <p className="font-semibold">Phone Number:</p>{" "}
+                          {phoneNumber}
+                        </li>
+                        <li>
+                          <p className="font-semibold">Special Notes:</p>{" "}
+                          {notes}
+                        </li>
+                      </ul>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+          ) : (
+            user && (
+              <p className="font-semibold text-lg h-16 text-center pt-4">
+                No Reservations Found!
+              </p>
+            )
+          )}{" "}
           <div className="block h-[screen/2] place-content-center space-y-12 bg-rwCadetGray px-72 py-24 text-center ">
             <div className="text-5xl font-semibold">
               <h2 className="mb-4">Reserve a table</h2>
@@ -303,30 +404,68 @@ const HomePage = () => {
             <div className="text-left">
               <h4 className="text-2xl font-semibold mb-4">Reservations:</h4>
               {reservations.length > 0 ? (
-                <div className="">
-                  {reservations.map((res) => (
-                    <ul className="grid grid-cols-3 gap-6 p-4 rounded-lg border-2 bg-rwSalmon">
-                      <li>
-                        <p className="font-semibold">Date:</p> {res.date}
-                      </li>
-                      <li>
-                        <p className="font-semibold">Time Slot:</p>{" "}
-                        {res.timeSlot}
-                      </li>
-                      <li>
-                        <p className="font-semibold">Group Size:</p>{" "}
-                        {res.groupSize}
-                      </li>
-                      <li>
-                        <p className="font-semibold">Phone Number:</p>{" "}
-                        {res.phoneNumber}
-                      </li>
-                      <li>
-                        <p className="font-semibold">Special Notes:</p>{" "}
-                        {res.notes}
-                      </li>
-                    </ul>
-                  ))}
+                <div className="grid gap-y-4">
+                  {reservations.map(
+                    ({
+                      reservationId,
+                      groupSize,
+                      date,
+                      timeSlot,
+                      restaurantId,
+                      phoneNumber,
+                      notes,
+                      name,
+                      surname,
+                      email,
+                    }) => (
+                      <div className="rounded-lg border-2 bg-rwSalmon">
+                        <div className=" flex items-center justify-end ">
+                          <button
+                            className="w-fit p-2 rounded-lg font-semibold text-sm bg-rwKhaki"
+                            onClick={() =>
+                              cancelReservationRestaurant(
+                                reservationId,
+                                groupSize,
+                                date,
+                                timeSlot,
+                                restaurantId
+                              )
+                            }
+                          >
+                            Cancel Reservation
+                          </button>
+                        </div>
+                        <ul className="grid grid-cols-3 gap-6 p-4 ">
+                          <li>
+                            <p className="font-semibold">By:</p> {name}{" "}
+                            {surname}
+                          </li>
+                          <li>
+                            <p className="font-semibold">Date:</p> {date}
+                          </li>
+                          <li>
+                            <p className="font-semibold">Time Slot:</p>{" "}
+                            {timeSlot}
+                          </li>
+                          <li>
+                            <p className="font-semibold">Group Size:</p>{" "}
+                            {groupSize}
+                          </li>
+                          <li>
+                            <p className="font-semibold">Phone Number:</p>{" "}
+                            {phoneNumber}
+                          </li>
+                          <li>
+                            <p className="font-semibold">e-mail:</p> {email}
+                          </li>
+                          <li>
+                            <p className="font-semibold">Special Notes:</p>{" "}
+                            {notes}
+                          </li>
+                        </ul>
+                      </div>
+                    )
+                  )}
                 </div>
               ) : (
                 <p className="font-semibold text-lg">No Reservations Found!</p>
@@ -370,18 +509,3 @@ const HomePage = () => {
 };
 
 export default HomePage;
-
-// workingHours = [
-//   {
-//     timeSlot: "10-12",
-//     capacity: 40,
-//   },
-//   {
-//     timeSlot: "12-14",
-//     capacity: 30,
-//   },
-//   {
-//     timeSlot: "14-16",
-//     capacity: 25,
-//   },
-// ];
