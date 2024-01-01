@@ -76,11 +76,32 @@ const HomePage = () => {
   };
 
   useEffect(() => {
-    if (userId) getRestaurantData(userId);
-  }, [userId, reservations]);
+    if (userId) {
+      // getRestaurantData(userId);
+      if (userType === "1") getRestaurantData(userId);
+      // if (userType === "2") {
+      // Access the user from the "users" collection with the userId, access the "restaurantId" field
+      // of the user, getRestaurantData(restaurantId)
+      // }
 
-  if (userType === "1") {
-  }
+      if (userType === "2") {
+        const q = query(collection(db, "users"), where("id", "==", userId));
+        getDocs(q).then((querySnapshot) => {
+          querySnapshot.forEach((doc) => {
+            const userData = doc.data();
+            getRestaurantData(userData?.restaurantId);
+          });
+        });
+        // if (querySnapshot) console.log(querySnapshot);
+        // {
+        //   querySnapshot.forEach((doc) => {
+        //     const userData = doc.data();
+        //     getRestaurantData(userData?.restaurantId);
+        //   });
+        // }
+      }
+    }
+  }, [userId]);
 
   const RESTAURANTS_PER_PAGE = 9;
 
@@ -395,10 +416,11 @@ const HomePage = () => {
           </div>
         </div>
       )}
-      {userType === "1" && restaurantData && (
+      {(userType === "1" || userType === "2") && restaurantData && (
         <div className="grid grid-cols-2 gap-x-8 h-[screen/2] place-content-center space-y-12 bg-rwCadetGray px-36 py-24 text-center ">
           <h2 className="col-span-2 text-4xl font-bold">
-            Restaurant Page for {restaurantData?.name}
+            Restaurant {userType === "1" ? "Manager" : "Waitstaff"} Page for{" "}
+            {restaurantData?.name}
           </h2>
           <div>
             <div className="text-left">
@@ -419,22 +441,24 @@ const HomePage = () => {
                       email,
                     }) => (
                       <div className="rounded-lg border-2 bg-rwSalmon">
-                        <div className=" flex items-center justify-end ">
-                          <button
-                            className="w-fit p-2 rounded-lg font-semibold text-sm bg-rwKhaki"
-                            onClick={() =>
-                              cancelReservationRestaurant(
-                                reservationId,
-                                groupSize,
-                                date,
-                                timeSlot,
-                                restaurantId
-                              )
-                            }
-                          >
-                            Cancel Reservation
-                          </button>
-                        </div>
+                        {userType === "1" && (
+                          <div className=" flex items-center justify-end ">
+                            <button
+                              className="w-fit p-2 rounded-lg font-semibold text-sm bg-rwKhaki"
+                              onClick={() =>
+                                cancelReservationRestaurant(
+                                  reservationId,
+                                  groupSize,
+                                  date,
+                                  timeSlot,
+                                  restaurantId
+                                )
+                              }
+                            >
+                              Cancel Reservation
+                            </button>
+                          </div>
+                        )}
                         <ul className="grid grid-cols-3 gap-6 p-4 ">
                           <li>
                             <p className="font-semibold">By:</p> {name}{" "}
@@ -477,29 +501,37 @@ const HomePage = () => {
             <div className="flex space-x-4 items-center mb-4">
               <p className="font-semibold mr-1">Capacity:</p>
               {restaurantData.capacity}
-              <button
-                className="transition-all border-2 border-slate-500 p-2 font-semibold bg-rwSalmon rounded-lg disabled:bg-slate-400 disabled:text-slate-700"
-                onClick={editCapacity}
-                disabled={!updatedCapacity}
-              >
-                Edit Capacity:
-              </button>
-              <input
-                onChange={(e) => setUpdatedCapacity(Number(e.target.value))}
-                type="number"
-                className="w-16 rounded-lg p-2"
-              />
+              {userType === "1" && (
+                <div>
+                  <button
+                    className="transition-all border-2 border-slate-500 p-2 font-semibold bg-rwSalmon rounded-lg disabled:bg-slate-400 disabled:text-slate-700"
+                    onClick={editCapacity}
+                    disabled={!updatedCapacity}
+                  >
+                    Edit Capacity:
+                  </button>
+                  <input
+                    onChange={(e) => setUpdatedCapacity(Number(e.target.value))}
+                    type="number"
+                    className="w-16 rounded-lg p-2 ml-4"
+                  />
+                </div>
+              )}
             </div>
             <div className="flex space-x-4 items-center">
               <p className="font-semibold mr-1">Working Hours:</p>
               {"10.00-0.00"}
-              <button
-                className="transition-all border-2 border-slate-500 p-2 font-semibold bg-rwSalmon rounded-lg disabled:bg-slate-400 disabled:text-slate-700"
-                onClick={editCapacity}
-              >
-                Edit Working Hours:
-              </button>
-              <p>Coming soon</p>
+              {userType === "1" && (
+                <div className="flex items-center space-x-4">
+                  <button
+                    className="transition-all border-2 border-slate-500 p-2 font-semibold bg-rwSalmon rounded-lg disabled:bg-slate-400 disabled:text-slate-700"
+                    onClick={editCapacity}
+                  >
+                    Edit Working Hours:
+                  </button>
+                  <p>Coming soon</p>
+                </div>
+              )}
             </div>
           </div>
         </div>

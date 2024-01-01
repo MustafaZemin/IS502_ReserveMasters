@@ -29,6 +29,7 @@ const Register = () => {
   const [restaurantName, setRestaurantName] = useState("");
   const [description, setDescription] = useState("");
   const [capacity, setCapacity] = useState();
+  const [restaurantId, setRestaurantId] = useState("");
   const [maxGroupSize, setMaxGroupSize] = useState();
   const router = useRouter();
 
@@ -80,6 +81,20 @@ const Register = () => {
     router.push("/login");
   };
 
+  const submitRegisterWaitstaff = async (event) => {
+    event.preventDefault();
+    if (password !== confirmPassword) {
+      setError("Passwords should match!");
+      return;
+    }
+    setError(null);
+    const user = await signup(email, password, username, "2", setError, {
+      id: restaurantId,
+    });
+    if (!user) return;
+    router.push("/login");
+  };
+
   return (
     <div className="grid place-content-center">
       <Snackbar
@@ -115,6 +130,15 @@ const Register = () => {
               onClick={() => setSelectedUserType("restaurant")}
             >
               As a restaurant
+            </button>
+            <button
+              type="button"
+              className={`text-center text-lg font-semibold px-8 py-2 rounded-full transition-all ${
+                selectedUserType === "waitstaff" && "bg-rwBlack text-white"
+              }`}
+              onClick={() => setSelectedUserType("waitstaff")}
+            >
+              As a waitstaff
             </button>
           </div>
           {selectedUserType === "diner" && (
@@ -338,6 +362,89 @@ const Register = () => {
                   // disabled={!selectedDate || !selectedPersonCount || !selectedTimeSlot}
                 >
                   Register & Create Restaurant
+                </button>
+              </div>
+            </form>
+          )}
+          {selectedUserType === "waitstaff" && (
+            <form
+              onSubmit={submitRegisterWaitstaff}
+              className="flex flex-col gap-y-8"
+            >
+              <TextField
+                label="Restaurant ID"
+                name="text"
+                className="w-full"
+                type="text"
+                onChange={(e) => setRestaurantId(e.target.value)}
+                // error={methods.formState.errors.email}
+                // helperText={methods.formState.errors?.email?.message}
+                // {...methods.register("email")}
+              />
+              <TextField
+                label="e-mail"
+                name="email"
+                className="w-full"
+                type="email"
+                required
+                onChange={(e) => setEmail(e.target.value)}
+                // error={methods.formState.errors.email}
+                // helperText={methods.formState.errors?.email?.message}
+                // {...methods.register("email")}
+              />
+              <TextField
+                label="Username"
+                name="username"
+                className="w-full"
+                type="text"
+                required
+                onChange={(e) => setUsername(e.target.value)}
+
+                // error={methods.formState.errors.email}
+                // helperText={methods.formState.errors?.email?.message}
+                // {...methods.register("email")}
+              />
+              <TextField
+                label="Password"
+                name="password"
+                className="w-full"
+                type="password"
+                required
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                }}
+
+                // error={methods.formState.errors.email}
+                // helperText={methods.formState.errors?.email?.message}
+                // {...methods.register("email")}
+              />
+              <TextField
+                label="Confirm Password"
+                name="password"
+                className="w-full"
+                type="password"
+                required
+                onChange={(e) => setConfirmPassword(e.target.value)}
+
+                // error={methods.formState.errors.email}
+                // helperText={methods.formState.errors?.email?.message}
+                // {...methods.register("email")}
+              />
+              <div className="flex items-center space-x-8 justify-between">
+                <button
+                  type="button"
+                  onClick={() => router.push("/")}
+                  className="p-4 w-full rounded-lg  bg-rwCadetGray hover:brightness-110 transition-all font-semibold text-lg bottom-0"
+                  // onClick={() => router.push("/")}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="p-4 w-full rounded-lg disabled:text-slate-600 disabled:bg-slate-300 disabled:hover:brightness-100 bg-rwSalmon hover:brightness-110 transition-all font-semibold text-lg bottom-0"
+                  // disabled={!selectedDate || !selectedPersonCount || !selectedTimeSlot}
+                >
+                  Register
                 </button>
               </div>
             </form>

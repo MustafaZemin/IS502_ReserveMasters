@@ -180,7 +180,6 @@ const Reservation = (props) => {
             />
         );
         try {
-            const reservationsRef = doc(reservationsCollectionRef);
             const reservationId = String(Math.random());
             const reqBody = {
                 createdAt: new Date(),
@@ -201,16 +200,6 @@ const Reservation = (props) => {
             }
             await setDoc(doc(db, "reservations", reservationId), { ...reqBody });
             decreaseTimeSlotCapacity(selectedPersonCount, selectedDate, selectedTimeSlot, restaurantId);
-
-            // decreaseTimeSlotCapacity(selectedPersonCount, selectedDate, selectedTimeSlot)
-
-            /*const rstrntID = reqBody.restaurant_id;
-            const restaurantCollectionRef = collection(db, 'restaurants');
-            const restaurantRef = doc(restaurantCollectionRef, rstrntID);
-
-            await updateDoc(restaurantRef, {
-                capacity: capacity - selectedPersonCount
-            });*/
 
             setSubmitButtonText("Confirm & Reserve");
             setIsSuccessSnackbarOpen(true);

@@ -82,6 +82,17 @@ export const signup = async (email, password, username, userType, setError, rest
                     type: "1"
                 };
             }
+            else if (userType === "2") {
+                reqBody = {
+                    id: user.uid,
+                    email: user.email,
+                    username: username || "user",
+                    createdAt: user.metadata.creationTime || "",
+                    // restaurantData: { ...restaurantData },
+                    restaurantId: restaurantData.id,
+                    type: "2"
+                };
+            }
             // await setDoc(usersRef, reqBody);
 
             try {
